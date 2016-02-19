@@ -24,9 +24,16 @@ class Hiera
           :auth_user,
           :auth_pass,
         ]
-        lookup_params = @config.select { |p| lookup_supported_params.include?(p) }
+        # make this part compatible with ruby 1.8.7 (select behaviour changed over time)
+        lookup_params = Hash.new
+        @config.each { |p,d| 
+          if lookup_supported_params.include?(p) 
+            lookup_params[p] = d
+          end
+        }
+        lookup_params[:debug_log] = "Hiera.debug"
         
-        @lookup = LookupHttp.new(lookup_params.merge( { :debug_log => "Hiera.debug" } ))
+        @lookup = LookupHttp.new(lookup_params)
           
 
         @cache = {}
